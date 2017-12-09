@@ -13,5 +13,5 @@ def loop():
     asyncio.set_event_loop(loop)
     try:
         yield loop
-    except:
+    finally:
         loop.close()
