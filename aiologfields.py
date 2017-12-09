@@ -33,7 +33,7 @@ def _record_factory_factory(task_attr='logging_fields'):
     def _record_factory(*args, **kwargs):
         record = old_factory(*args, **kwargs)
         try:
-            t: asyncio.Task = asyncio.Task.current_task()
+            t = asyncio.Task.current_task()
         except RuntimeError:
             pass  # No loop in this thread. Don't worry about it.
         else:
