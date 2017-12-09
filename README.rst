@@ -38,8 +38,8 @@ It couldn't be easier:
 
     aiologfields.install()
 
-After this, *every single task* created will have a ``logging_fields``.
-To add a field to a ``LogRecord``, simply apply it to any task:
+After this, *every single task* created will have a ``logging_fields``
+attribute. To add a field to a ``LogRecord``, simply apply it to any task:
 
 .. code-block:: python
 
