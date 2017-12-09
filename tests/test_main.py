@@ -1,11 +1,6 @@
 import logging
 import asyncio
-import os
-import time
-import threading
 from uuid import uuid4
-
-import pytest
 import aiologfields
 
 
