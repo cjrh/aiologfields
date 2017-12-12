@@ -22,6 +22,43 @@ def test_main(loop: asyncio.AbstractEventLoop, caplog):
     assert caplog.records[0].correlation_id == correlation_id
 
 
+def test_set(loop: asyncio.AbstractEventLoop, caplog):
+    # TODO: add a negative test for running in a thread lacking a loop
+    aiologfields.install()
+    correlation_id = str(uuid4())
+    logger = logging.getLogger('blah')
+
+    async def cf2():
+        logger.info('blah blah')
+
+    async def cf1():
+        aiologfields.set_fields(correlation_id=correlation_id)
+        await cf2()
+
+    loop.run_until_complete(cf1())
+
+    assert caplog.records[0].correlation_id == correlation_id
+
+
+def test_set_multi(loop: asyncio.AbstractEventLoop, caplog):
+    # TODO: add a negative test for running in a thread lacking a loop
+    aiologfields.install()
+    correlation_id = str(uuid4())
+    logger = logging.getLogger('blah')
+
+    async def cf2():
+        logger.info('blah blah')
+
+    async def cf1():
+        aiologfields.set_fields(correlation_id=correlation_id, blah=12345)
+        await cf2()
+
+    loop.run_until_complete(cf1())
+
+    assert caplog.records[0].correlation_id == correlation_id
+    assert caplog.records[0].blah == 12345
+
+
 def test_inner_task(loop: asyncio.AbstractEventLoop, caplog):
     aiologfields.install()
     correlation_id = str(uuid4())

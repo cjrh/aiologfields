@@ -93,3 +93,23 @@ def set_task_factory_logging_fields(task_attr='logging_fields'):
 def install():
     set_log_record_factory_logging_fields()
     set_task_factory_logging_fields()
+
+
+def set_fields(task: asyncio.Task = None, task_attr='logging_fields', **kwargs):
+    """ This is a convenience function, whose main benefit is hiding the
+    ``t`` reference to the task. Call it like this:
+
+    .. code-block:: python
+
+        aiologfields.set_fields(correlation_id=12345)
+
+    - Raises RuntimeError if called with no loop in the current thread.
+    - The new task factory should already have been set up, typically via
+      ``aiologfields.install()``
+    """
+    t = task or asyncio.Task.current_task()
+    if t and hasattr(t, task_attr):
+        attr = getattr(t, task_attr)
+        assert isinstance(attr, SimpleNamespace)
+        for name, value in kwargs.items():
+            setattr(attr, name, value)
