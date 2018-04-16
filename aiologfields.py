@@ -69,7 +69,7 @@ def _new_task_factory_factory(task_attr='logging_fields'):
         # task.
         current_task = asyncio.Task.current_task()
         if current_task:
-            current_attr = getattr(current_task, task_attr)
+            current_attr = getattr(current_task, task_attr, None)
             if current_attr:
                 # The NEW task's container
                 attr = getattr(t, task_attr)
