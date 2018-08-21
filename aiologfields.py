@@ -26,6 +26,9 @@ from types import SimpleNamespace
 from copy import deepcopy
 
 
+INSTALLED = False
+
+
 def _record_factory_factory(task_attr='logging_fields'):
 
     old_factory = logging.getLogRecordFactory()
@@ -91,7 +94,12 @@ def set_task_factory_logging_fields(task_attr='logging_fields'):
 
 
 def install():
-    set_log_record_factory_logging_fields()
+    """The factory function that produces LogRecord will get replaced
+    by our one. But we don't want to do this more than once."""
+    global INSTALLED
+    if not INSTALLED:
+        set_log_record_factory_logging_fields()
+        INSTALLED = True
     set_task_factory_logging_fields()
 
 
