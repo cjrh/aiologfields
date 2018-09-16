@@ -13,7 +13,7 @@ def test_main(loop: asyncio.AbstractEventLoop, caplog):
         logger.info('blah blah')
 
     async def cf1():
-        ct = asyncio.Task.current_task()
+        ct = aiologfields.get_current_task()
         ct.logging_fields.correlation_id = correlation_id
         await cf2()
 
@@ -68,7 +68,7 @@ def test_inner_task(loop: asyncio.AbstractEventLoop, caplog):
         logger.info('hey')
 
     async def cf1():
-        ct = asyncio.Task.current_task()
+        ct = aiologfields.get_current_task()
         ct.logging_fields.correlation_id = correlation_id
         t = loop.create_task(cf2())
         await t
@@ -91,7 +91,7 @@ def test_thread(loop: asyncio.AbstractEventLoop, caplog):
         await loop.run_in_executor(None, thread_func)
 
     async def cf1():
-        ct = asyncio.Task.current_task()
+        ct = aiologfields.get_current_task()
         ct.logging_fields.correlation_id = correlation_id
         t = loop.create_task(cf2())
         await t
