@@ -24,9 +24,17 @@ import asyncio
 import logging
 from types import SimpleNamespace
 from copy import deepcopy
+import sys
 
 
 INSTALLED = False
+
+
+def get_current_task(*args, **kwargs):  # pragma: no cover
+    if sys.version_info < (3, 7):
+        return asyncio.Task.current_task(*args, **kwargs)
+    else:
+        return asyncio.current_task(*args, **kwargs)
 
 
 def _record_factory_factory(task_attr='logging_fields'):
@@ -36,7 +44,7 @@ def _record_factory_factory(task_attr='logging_fields'):
     def _record_factory(*args, **kwargs):
         record = old_factory(*args, **kwargs)
         try:
-            t = asyncio.Task.current_task()
+            t = get_current_task()
         except RuntimeError:
             pass  # No loop in this thread. Don't worry about it.
         else:
@@ -70,7 +78,7 @@ def _new_task_factory_factory(task_attr='logging_fields'):
 
         # If there are fields on the CURRENT task, copy them over to this
         # task.
-        current_task = asyncio.Task.current_task()
+        current_task = get_current_task(loop=loop)
         if current_task:
             current_attr = getattr(current_task, task_attr, None)
             if current_attr:
@@ -115,7 +123,7 @@ def set_fields(task: asyncio.Task = None, task_attr='logging_fields', **kwargs):
     - The new task factory should already have been set up, typically via
       ``aiologfields.install()``
     """
-    t = task or asyncio.Task.current_task()
+    t = task or get_current_task()
     if t and hasattr(t, task_attr):
         attr = getattr(t, task_attr)
         assert isinstance(attr, SimpleNamespace)
