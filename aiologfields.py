@@ -17,7 +17,7 @@
 """
 
 
-__version__ = '2018.8.2'
+__version__ = '2018.9.1'
 
 
 import asyncio
