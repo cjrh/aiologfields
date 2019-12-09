@@ -1,5 +1,5 @@
-.. image:: https://travis-ci.org/cjrh/aiologfields.svg?branch=master
-    :target: https://travis-ci.org/cjrh/aiologfields
+.. image:: https://github.com/cjrh/aiologfields/workflows/Python%20application/badge.svg
+    :target: https://github.com/cjrh/aiologfields/actions
 
 .. image:: https://coveralls.io/repos/github/cjrh/aiologfields/badge.svg?branch=master
     :target: https://coveralls.io/github/cjrh/aiologfields?branch=master
@@ -18,6 +18,15 @@
 
 .. image:: https://img.shields.io/badge/calver-YYYY.MM.MINOR-22bfda.svg
     :target: http://calver.org/
+
+.. image:: https://pepy.tech/badge/aiologfields
+    :alt: Downloads
+    :target: https://pepy.tech/project/aiologfields
+
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :alt: This project uses the "black" style formatter for Python code
+    :target: https://github.com/python/black
+
 
 
 aiologfields
