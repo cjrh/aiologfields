@@ -1,3 +1,3 @@
-pytest==4.3.0
+pytest
 pytest-cov
-coveralls
+coveralls==1.9.2
