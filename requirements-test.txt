@@ -1,3 +1,4 @@
 pytest
 pytest-cov
-coveralls==1.9.2
+coverage<5
+coveralls
