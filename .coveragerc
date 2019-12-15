@@ -1,8 +1,5 @@
 [run]
 branch = True
-include =
-    aiologfields.py
-    tests/*
 
 [report]
 exclude_lines =
