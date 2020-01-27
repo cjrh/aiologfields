@@ -25,6 +25,7 @@ import logging
 from types import SimpleNamespace
 from copy import deepcopy
 import sys
+from contextlib import suppress
 
 
 def get_current_task(*args, **kwargs):  # pragma: no cover
@@ -93,7 +94,7 @@ def set_task_factory_logging_fields(loop, task_attr='logging_fields'):
     loop.set_task_factory(_new_task_factory_factory(task_attr))
 
 
-def install(loop):
+def install(loop, task_attr='logging_fields'):
     """The factory function that produces LogRecord will get replaced
     by our one. But we don't want to do this more than once."""
     if hasattr(loop, "_logfields_installed"):
@@ -101,6 +102,14 @@ def install(loop):
 
     set_log_record_factory_logging_fields(loop)
     set_task_factory_logging_fields(loop)
+
+    # If called within the context of an existing task, add the special
+    # field to that one.
+    with suppress(RuntimeError):
+        pass
+        t = get_current_task()
+        if t and not hasattr(t, task_attr):
+            setattr(t, task_attr, SimpleNamespace())
 
     loop._logfields_installed = True
 

@@ -102,3 +102,21 @@ def test_thread(loop: asyncio.AbstractEventLoop, caplog):
     assert r.name == 'blah2'
     assert r.message == 'from thread'
     assert hasattr(r, 'correlation_id')
+
+
+def test_inside_running_loop(loop: asyncio.AbstractEventLoop, caplog):
+    correlation_id = str(uuid4())
+    logger = logging.getLogger('blah')
+
+    async def cf2():
+        logger.info('blah blah')
+
+    async def cf1():
+        aiologfields.install(loop)
+        ct = aiologfields.get_current_task()
+        ct.logging_fields.correlation_id = correlation_id
+        await cf2()
+
+    loop.run_until_complete(cf1())
+
+    assert caplog.records[0].correlation_id == correlation_id
