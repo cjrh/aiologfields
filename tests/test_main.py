@@ -5,7 +5,7 @@ import aiologfields
 
 
 def test_main(loop: asyncio.AbstractEventLoop, caplog):
-    aiologfields.install()
+    aiologfields.install(loop)
     correlation_id = str(uuid4())
     logger = logging.getLogger('blah')
 
@@ -24,7 +24,7 @@ def test_main(loop: asyncio.AbstractEventLoop, caplog):
 
 def test_set(loop: asyncio.AbstractEventLoop, caplog):
     # TODO: add a negative test for running in a thread lacking a loop
-    aiologfields.install()
+    aiologfields.install(loop)
     correlation_id = str(uuid4())
     logger = logging.getLogger('blah')
 
@@ -42,7 +42,7 @@ def test_set(loop: asyncio.AbstractEventLoop, caplog):
 
 def test_set_multi(loop: asyncio.AbstractEventLoop, caplog):
     # TODO: add a negative test for running in a thread lacking a loop
-    aiologfields.install()
+    aiologfields.install(loop)
     correlation_id = str(uuid4())
     logger = logging.getLogger('blah')
 
@@ -60,7 +60,7 @@ def test_set_multi(loop: asyncio.AbstractEventLoop, caplog):
 
 
 def test_inner_task(loop: asyncio.AbstractEventLoop, caplog):
-    aiologfields.install()
+    aiologfields.install(loop)
     correlation_id = str(uuid4())
     logger = logging.getLogger('blah2')
 
@@ -80,7 +80,7 @@ def test_inner_task(loop: asyncio.AbstractEventLoop, caplog):
 
 def test_thread(loop: asyncio.AbstractEventLoop, caplog):
     """Verify that logging across thread boundaries still works."""
-    aiologfields.install()
+    aiologfields.install(loop)
     correlation_id = str(uuid4())
     logger = logging.getLogger('blah2')
 
@@ -101,4 +101,4 @@ def test_thread(loop: asyncio.AbstractEventLoop, caplog):
     r = caplog.records[0]
     assert r.name == 'blah2'
     assert r.message == 'from thread'
-    assert not hasattr(r, 'correlation_id')
+    assert hasattr(r, 'correlation_id')
