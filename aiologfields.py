@@ -25,9 +25,7 @@ import logging
 from types import SimpleNamespace
 from copy import deepcopy
 import sys
-
-
-INSTALLED = False
+from contextlib import suppress
 
 
 def get_current_task(*args, **kwargs):  # pragma: no cover
@@ -37,14 +35,14 @@ def get_current_task(*args, **kwargs):  # pragma: no cover
         return asyncio.current_task(*args, **kwargs)
 
 
-def _record_factory_factory(task_attr='logging_fields'):
+def _record_factory_factory(loop, task_attr='logging_fields'):
 
     old_factory = logging.getLogRecordFactory()
 
     def _record_factory(*args, **kwargs):
         record = old_factory(*args, **kwargs)
         try:
-            t = get_current_task()
+            t = get_current_task(loop=loop)
         except RuntimeError:
             pass  # No loop in this thread. Don't worry about it.
         else:
@@ -59,14 +57,10 @@ def _record_factory_factory(task_attr='logging_fields'):
     return _record_factory
 
 
-def set_log_record_factory_logging_fields(task_attr: str = 'logging_fields'):
+def set_log_record_factory_logging_fields(loop, task_attr: str = 'logging_fields'):
     """ Modify the default LogRecord factory so that we automatically
     insert Task-local logging fields into the LoggingRecords. """
-    # NOTE: for some reason that I don't understand, get_event_loop MUST be
-    # called before logging.basicConfig() is set up, or else asyncio
-    # barfs due to something in our record factory above. No idea why yet.
-    loop = asyncio.get_event_loop()  # TODO: investigate
-    logging.setLogRecordFactory(_record_factory_factory(task_attr=task_attr))
+    logging.setLogRecordFactory(_record_factory_factory(loop, task_attr=task_attr))
 
 
 def _new_task_factory_factory(task_attr='logging_fields'):
@@ -96,22 +90,31 @@ def _new_task_factory_factory(task_attr='logging_fields'):
     return _new_task_factory
 
 
-def set_task_factory_logging_fields(task_attr='logging_fields'):
-    loop = asyncio.get_event_loop()
+def set_task_factory_logging_fields(loop, task_attr='logging_fields'):
     loop.set_task_factory(_new_task_factory_factory(task_attr))
 
 
-def install():
+def install(loop, task_attr='logging_fields'):
     """The factory function that produces LogRecord will get replaced
     by our one. But we don't want to do this more than once."""
-    global INSTALLED
-    if not INSTALLED:
-        set_log_record_factory_logging_fields()
-        INSTALLED = True
-    set_task_factory_logging_fields()
+    if hasattr(loop, "_logfields_installed"):
+        return
+
+    set_log_record_factory_logging_fields(loop)
+    set_task_factory_logging_fields(loop)
+
+    # If called within the context of an existing task, add the special
+    # field to that one.
+    with suppress(RuntimeError):
+        pass
+        t = get_current_task()
+        if t and not hasattr(t, task_attr):
+            setattr(t, task_attr, SimpleNamespace())
+
+    loop._logfields_installed = True
 
 
-def set_fields(task: asyncio.Task = None, task_attr='logging_fields', **kwargs):
+def set_fields(task: asyncio.Task = None, task_attr='logging_fields', loop=None, **kwargs):
     """ This is a convenience function, whose main benefit is hiding the
     ``t`` reference to the task. Call it like this:
 
@@ -123,7 +126,7 @@ def set_fields(task: asyncio.Task = None, task_attr='logging_fields', **kwargs):
     - The new task factory should already have been set up, typically via
       ``aiologfields.install()``
     """
-    t = task or get_current_task()
+    t = task or get_current_task(loop=loop)
     if t and hasattr(t, task_attr):
         attr = getattr(t, task_attr)
         assert isinstance(attr, SimpleNamespace)
